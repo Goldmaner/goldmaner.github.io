@@ -2,7 +2,7 @@
 
 > Ferramenta web para controle e documentação de remanejamentos orçamentários em parcerias entre OSCs e Unidades Gestoras públicas (Lei 13.019/2014).
 
-🔗 **Acesso direto:** [https://goldminer.github.io](https://goldminer.github.io)
+🔗 **Acesso direto:** [https://goldmaner.github.io](https://goldmaner.github.io)
 
 ---
 
@@ -26,7 +26,7 @@ O **Demonstrativo de Aferição de Remanejamento Orçamentário** calcula automa
 
 ## Como usar
 
-1. Abra [https://goldminer.github.io](https://goldminer.github.io) no navegador (Chrome ou Edge recomendados)
+1. Abra [https://goldmaner.github.io](https://goldmaner.github.io) no navegador (Chrome ou Edge recomendados)
 2. Leia a aba **1. Instruções** antes de começar
 3. Preencha o **2. Cabeçalho** com os dados da parceria
 4. Lance o orçamento em **4. Previsto** e os gastos em **5. Executado**
@@ -72,7 +72,7 @@ Os projetos são salvos em `.daf.json`:
 
 ```bash
 # Clone
-git clone https://github.com/goldminer/goldminer.github.io.git
+git clone https://github.com/Goldmaner/goldminer.github.io.git
 cd goldminer.github.io
 
 # Servidor local (qualquer um serve)
