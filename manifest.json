@@ -1,0 +1,18 @@
+{
+  "name": "Demonstrativo de Aferição de Remanejamento Orçamentário",
+  "short_name": "DAF Aferição",
+  "description": "Ferramenta para aferição de remanejamento orçamentário de parcerias",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FAFAFA",
+  "theme_color": "#1565C0",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231565C0' width='100' height='100' rx='16'/><text x='50' y='68' text-anchor='middle' font-size='52' fill='white' font-family='sans-serif' font-weight='bold'>DA</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

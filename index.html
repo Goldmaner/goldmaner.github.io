@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel do Demonstrativo de Aferição</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1565C0">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #FAFAFA; color: #212121; font-size: 14px; }
+button { cursor: pointer; font-family: inherit; font-size: 13px; }
+input, select { font-family: inherit; font-size: 13px; }
+
+/* ═══════════════════════════════════════════════════════════════
+   TOOLBAR
+   ═══════════════════════════════════════════════════════════════ */
+.toolbar { background: #1565C0; padding: 8px 16px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.toolbar .sep { width: 1px; height: 28px; background: #5C8EC8; margin: 0 10px; }
+.btn-save { background: #43A047; color: #fff; border: none; padding: 8px 18px; font-weight: bold; border-radius: 4px; }
+.btn-save:hover { background: #2E7D32; }
+.btn-primary { background: #1E88E5; color: #fff; border: none; padding: 7px 14px; border-radius: 4px; font-weight: 600; }
+.btn-primary:hover { background: #1565C0; }
+.btn-secondary { background: #E0E0E0; color: #333; border: 1px solid #BDBDBD; padding: 6px 12px; border-radius: 4px; }
+.btn-secondary:hover { background: #BDBDBD; }
+.btn-green { background: #388E3C; color: #fff; border: none; padding: 7px 14px; border-radius: 4px; font-weight: 600; }
+.btn-green:hover { background: #2E7D32; }
+.btn-danger { background: #E53935; color: #fff; border: none; padding: 7px 14px; border-radius: 4px; font-weight: 600; }
+.btn-danger:hover { background: #C62828; }
+.dirty-indicator { color: #FFEB3B; font-weight: bold; font-size: 12px; display: none; }
+.dirty-indicator.active { display: inline; }
+.toolbar input[type="file"] { display: none; }
+
+/* ═══════════════════════════════════════════════════════════════
+   STATUS BAR
+   ═══════════════════════════════════════════════════════════════ */
+.statusbar { background: #ECEFF1; padding: 4px 16px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; }
+.pa-badge { padding: 3px 10px; border-radius: 3px; color: #fff; font-weight: 600; font-size: 11px; }
+.pa-ok { background: #43A047; }
+.pa-warn { background: #E53935; }
+
+/* ═══════════════════════════════════════════════════════════════
+   TABS
+   ═══════════════════════════════════════════════════════════════ */
+.tabs { display: flex; border-bottom: 2px solid #1565C0; background: #E3F2FD; flex-wrap: wrap; }
+.tab-btn { padding: 10px 20px; border: none; background: transparent; font-size: 13px; font-weight: 600; color: #1565C0; border-bottom: 3px solid transparent; transition: all .15s; }
+.tab-btn:hover { background: #BBDEFB; }
+.tab-btn.active { background: #1565C0; color: #fff; border-bottom-color: #0D47A1; }
+.tab-content { display: none; padding: 16px; min-height: 400px; }
+.tab-content.active { display: block; }
+
+/* ═══════════════════════════════════════════════════════════════
+   FORMS
+   ═══════════════════════════════════════════════════════════════ */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; max-width: 860px; }
+.form-grid label { font-weight: 600; font-size: 12px; color: #555; margin-bottom: 2px; display: block; }
+.form-grid input, .form-grid select { width: 100%; padding: 8px 10px; border: 1px solid #BDBDBD; border-radius: 4px; }
+.form-grid input:focus, .form-grid select:focus { outline: none; border-color: #1565C0; box-shadow: 0 0 0 2px rgba(21,101,192,0.15); }
+.form-span-2 { grid-column: span 2; }
+.form-actions { margin-top: 16px; }
+
+/* ═══════════════════════════════════════════════════════════════
+   INSTRUCTION BLOCKS
+   ═══════════════════════════════════════════════════════════════ */
+.instr-block { border-radius: 6px; padding: 16px; margin-bottom: 12px; font-size: 13px; line-height: 1.6; }
+.instr-block b { display: inline; }
+
+/* ═══════════════════════════════════════════════════════════════
+   DATA TABLES
+   ═══════════════════════════════════════════════════════════════ */
+.table-toolbar { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+.table-wrapper { overflow-x: auto; max-height: 70vh; overflow-y: auto; border: 1px solid #E0E0E0; border-radius: 4px; }
+.data-table { border-collapse: collapse; width: max-content; min-width: 100%; }
+.data-table th { background: #1565C0; color: #fff; padding: 6px 8px; font-size: 12px; font-weight: 600; white-space: nowrap; position: sticky; top: 0; z-index: 2; }
+.data-table td { padding: 4px 6px; border: 1px solid #E0E0E0; white-space: nowrap; }
+.data-table tr:hover { background: #F5F5F5; }
+.data-table tr.selected { background: #BBDEFB !important; }
+.data-table tr.exec-only { background: #E8F5E9 !important; }
+.data-table td.overrun { background: #FFEB3B !important; }
+.data-table td.pra-positive { background: #FFF9C4 !important; font-weight: bold; }
+.data-table td.total-col { background: #E3F2FD; font-weight: bold; }
+.data-table td.alt-total { background: #EDE7F6; font-weight: bold; text-align: center; }
+.data-table input[type="text"], .data-table input[type="number"] { border: none; background: transparent; width: 80px; padding: 3px 4px; text-align: right; font-size: 13px; font-family: inherit; }
+.data-table input[type="text"]:focus, .data-table input[type="number"]:focus { background: #fff; outline: 1px solid #1565C0; border-radius: 2px; }
+.data-table select { border: none; background: transparent; font-size: 12px; padding: 2px; }
+.data-table .item-input { width: 160px; text-align: left; }
+.data-table .qty-input { width: 40px; text-align: center; }
+.data-table .readonly-cell { color: #555; }
+.data-table tfoot td { background: #F5F5F5; font-weight: bold; border-top: 2px solid #1565C0; position: sticky; bottom: 0; z-index: 1; }
+
+/* Alt table header */
+.alt-header { background: #4A148C !important; }
+
+/* PA banner */
+.pa-banner { padding: 10px 16px; border-radius: 4px; margin-bottom: 10px; color: #fff; font-weight: bold; }
+.pa-banner.ok { background: #43A047; }
+.pa-banner.warn { background: #E53935; }
+
+/* Warnings */
+.warnings-box { background: #FFF3E0; border-radius: 4px; padding: 10px; margin-bottom: 10px; font-size: 12px; display: none; }
+.warnings-box.active { display: block; }
+
+/* VTP display */
+.vtp-display { font-weight: bold; color: #1565C0; font-size: 13px; margin-left: 16px; }
+
+/* App name header */
+.app-header { background: #0D47A1; color: #fff; padding: 6px 16px; display: flex; align-items: center; justify-content: space-between; }
+.app-header h1 { font-size: 15px; font-weight: 700; letter-spacing: .3px; }
+.app-header .app-subtitle { font-size: 11px; opacity: .8; }
+
+/* Info blocks in placeholder tab */
+.placeholder-box { background: #FFF9C4; border-radius: 6px; padding: 20px; max-width: 700px; }
+
+/* ═══════════════════════════════════════════════════════════════
+   PRINT STYLES
+   ═══════════════════════════════════════════════════════════════ */
+@media print {
+  @page { size: A4 landscape; margin: 10mm; }
+  body { font-size: 9px !important; background: #fff !important; }
+  .toolbar, .statusbar, .tabs, .table-toolbar, .form-actions,
+  .btn-save, .btn-primary, .btn-secondary, .btn-green, .btn-danger,
+  .dirty-indicator, .warnings-box, .tab-btn { display: none !important; }
+  .tab-content { display: block !important; padding: 0 !important; page-break-after: always; }
+  .tab-content:last-child { page-break-after: avoid; }
+  .table-wrapper { overflow: visible !important; max-height: none !important; border: none !important; }
+  .data-table { width: 100% !important; min-width: 0 !important; }
+  .data-table th { background: #333 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 8px !important; padding: 3px 4px !important; }
+  .data-table td { font-size: 8px !important; padding: 2px 3px !important; }
+  .data-table input { font-size: 8px !important; width: auto !important; }
+  .data-table td.overrun { background: #FFEB3B !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .data-table td.pra-positive { background: #FFF9C4 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .data-table tr.exec-only { background: #E8F5E9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .pa-banner { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .form-grid { max-width: 100%; }
+  .instr-block { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  h2.print-title { display: block !important; font-size: 14px; margin-bottom: 8px; }
+}
+h2.print-title { display: none; }
+</style>
+</head>
+<body>
+
+<!-- ═══ TOOLBAR ═══════════════════════════════════════════════ -->
+<div class="toolbar" id="toolbar">
+  <button class="btn-save" onclick="salvarProjeto()" title="Ctrl+S">💾 SALVAR</button>
+  <button class="btn-primary" onclick="document.getElementById('fileOpen').click()">📂 Abrir</button>
+  <input type="file" id="fileOpen" accept=".json,.daf.json" onchange="abrirProjeto(event)">
+  <button class="btn-secondary" onclick="salvarComo()">Salvar Como...</button>
+  <div class="sep"></div>
+  <button class="btn-primary" onclick="window.print()">📄 Exportar PDF</button>
+  <button class="btn-secondary" onclick="exportarCSV()">📊 Exportar CSV</button>
+  <div class="sep"></div>
+  <span class="dirty-indicator" id="dirtyFlag">● Alterações não salvas</span>
+</div>
+
+<!-- ═══ NOME DA APLICAÇÃO ════════════════════════════════════ -->
+<div class="app-header">
+  <div>
+    <h1>📊 Painel do Demonstrativo de Aferição</h1>
+    <span class="app-subtitle">Demonstrativo de Aferição de Remanejamento Orçamentário — Gestão de Parcerias OSC</span>
+  </div>
+</div>
+
+<!-- ═══ TABS ══════════════════════════════════════════════════ -->
+<div class="tabs" id="tabBar">
+  <button class="tab-btn active" onclick="switchTab(0)">1. Instruções</button>
+  <button class="tab-btn" onclick="switchTab(1)">2. Cabeçalho</button>
+  <button class="tab-btn" onclick="switchTab(2)">3. Conciliação Bancária</button>
+  <button class="tab-btn" onclick="switchTab(3)">4. Previsto</button>
+  <button class="tab-btn" onclick="switchTab(4)">5. Executado</button>
+  <button class="tab-btn" onclick="switchTab(5)">6. % de Alteração</button>
+</div>
+
+<!-- ═══ TAB 0: INSTRUÇÕES ════════════════════════════════════ -->
+<div class="tab-content active" id="tab0">
+  <h2 class="print-title">1. Instruções de Uso</h2>
+  <h3 style="color:#1565C0;margin-bottom:16px;">📋 Como preencher o Demonstrativo de Aferição</h3>
+  <div style="max-width:900px;">
+
+    <div class="instr-block" style="background:#E3F2FD;">
+      <b>🗂 O que é este sistema?</b><br>
+      O sistema de Aferição de Remanejamento Orçamentário serve para controlar e documentar as alterações entre os valores previstos e os efetivamente executados em uma parceria entre OSC (Organização da Sociedade Civil) e Unidade Gestora pública. Ele calcula automaticamente o <b>PA (Percentual Acumulado)</b> de alterações e indica se a execução está dentro do limite de autonomia de <b>15%</b> sobre o Valor Total da Parceria (VTP).
+    </div>
+
+    <div class="instr-block" style="background:#E8F5E9;">
+      <b>Passo 1 — Cabeçalho (aba 2):</b><br>
+      Preencha todos os campos antes de iniciar o lançamento de despesas:
+      <ul style="margin:8px 0 0 18px;line-height:1.8;">
+        <li><b>Nome da OSC</b>: razão social da entidade parceira.</li>
+        <li><b>Nome do Projeto</b>: título completo conforme o instrumento jurídico.</li>
+        <li><b>Número do Termo</b>: número do convênio, termo de fomento ou colaboração (máx. 30 caracteres).</li>
+        <li><b>Processo SEI</b>: número do processo eletrônico no sistema SEI (máx. 20 caracteres).</li>
+        <li><b>VTP (Valor Total Previsto)</b>: valor global da parceria, <u>sem</u> incluir rendimentos. Este valor é o <b>denominador constante</b> de todos os cálculos de percentual. Não deve ser alterado durante a execução, salvo Termo Aditivo de valor.</li>
+        <li><b>Valor Repassado</b>: montante efetivamente transferido para a conta da parceria.</li>
+        <li><b>Rendimentos</b>: total de juros/aplicação acumulados na conta. O uso de rendimentos <b>não</b> conta no limite de 15%.</li>
+        <li><b>Data de Início / Fim</b>: definem o número de meses do projeto e os cabeçalhos das colunas mensais nas tabelas.</li>
+      </ul>
+    </div>
+
+    <div class="instr-block" style="background:#FFF3E0;">
+      <b>Passo 2 — Previsto (aba 4):</b><br>
+      Registre o <b>plano orçamentário original</b> aprovado no instrumento:<br>
+      <ul style="margin:8px 0 0 18px;line-height:1.8;">
+        <li>Clique em <b>"+ Adicionar Item"</b> para cada linha de despesa.</li>
+        <li>Selecione o <b>Elemento de Despesa</b> (Pessoal, Materiais, Administrativas, Serviços de Terceiros, Outras Despesas, Imobilizado, Implantação).</li>
+        <li>Informe a <b>Quantidade</b> (ex: nº de profissionais, unidades) — campo informativo.</li>
+        <li>Preencha o <b>Item de Despesa</b> com a descrição específica (ex: "Coordenador de projeto").</li>
+        <li>Lance os valores mês a mês. A <b>coluna Total</b> é calculada automaticamente.</li>
+        <li>Use <b>▲ / ▼</b> para reordenar linhas, <b>"Inserir Acima"</b> para incluir uma linha entre outras existentes.</li>
+        <li>Para apagar, selecione a linha e clique em <b>"✕ Remover"</b>.</li>
+        <li>⚠ O total previsto de todos os itens <b>não deve ultrapassar o VTP</b>.</li>
+      </ul>
+    </div>
+
+    <div class="instr-block" style="background:#F3E5F5;">
+      <b>Passo 3 — Executado (aba 5):</b><br>
+      Registre os valores <b>efetivamente gastos</b> mês a mês:
+      <ul style="margin:8px 0 0 18px;line-height:1.8;">
+        <li>As linhas do Previsto são <b>espelhadas automaticamente</b> — os campos de Elemento, Qtd e Item não são editáveis aqui.</li>
+        <li>Lance apenas os valores de execução em cada célula de mês.</li>
+        <li><b>Célula amarela</b>: o valor executado excede o previsto naquele mês e item — isso gera PRA na aba de Alteração.</li>
+        <li>Para despesas <b>não previstas</b> no plano original, use <b>"+ Só Executado"</b>. Essas linhas aparecerão em <span style="background:#E8F5E9;padding:1px 5px;border-radius:2px;">verde</span> e também entram no cálculo do PA.</li>
+        <li>Remoção de linhas não é permitida nesta aba — para excluir um item, use a aba Previsto.</li>
+        <li>⚠ O total executado <b>não deve ultrapassar</b> o Valor Repassado + Rendimentos.</li>
+      </ul>
+    </div>
+
+    <div class="instr-block" style="background:#EDE7F6;">
+      <b>Passo 4 — % de Alteração (aba 6):</b><br>
+      Esta aba é <b>somente leitura</b> e calculada automaticamente:
+      <ul style="margin:8px 0 0 18px;line-height:1.8;">
+        <li><b>PRA (célula)</b> = max(0, (Executado − Previsto) / VTP). Células com PRA &gt; 0 ficam destacadas em <span style="background:#FFF9C4;padding:1px 5px;border-radius:2px;">amarelo claro</span>.</li>
+        <li><b>PA</b> = soma de todas as células PRA. Representa o impacto percentual acumulado de remanejamento.</li>
+        <li>Se <b>PA ≤ 15%</b>: remanejamento dentro da autonomia → <span style="background:#43A047;color:#fff;padding:1px 6px;border-radius:2px;">verde</span>. Registre a justificativa no Demonstrativo de Aferição.</li>
+        <li>Se <b>PA &gt; 15%</b>: limite excedido → <span style="background:#E53935;color:#fff;padding:1px 6px;border-radius:2px;">vermelho</span>. Requer consulta e anuência prévia da Unidade Gestora e possível Termo Aditivo.</li>
+      </ul>
+    </div>
+
+    <div class="instr-block" style="background:#FFF9C4;">
+      <b>⚠ Restrições de Integridade (Hard Blocks):</b>
+      <ul style="margin:8px 0 0 18px;line-height:1.8;">
+        <li><b>Vedação de Exclusão</b>: é proibido zerar um item de despesa (executado = R$ 0,00) quando havia valor previsto, sem anuência expressa da Unidade Gestora.</li>
+        <li><b>Alteração de Cronograma</b>: movimentação de valores entre parcelas mensais de um mesmo item exige Termo Aditivo, independentemente do percentual.</li>
+        <li><b>Rendimentos</b>: só podem ser utilizados após o esgotamento integral dos recursos repassados.</li>
+      </ul>
+    </div>
+
+    <div class="instr-block" style="background:#FFEBEE;">
+      <b>💾 Salvar, Abrir e Exportar:</b>
+      <ul style="margin:8px 0 0 18px;line-height:1.8;">
+        <li><b>SALVAR (Ctrl+S)</b>: salva o projeto em formato <code>.daf.json</code>. Guarde este arquivo — ele contém todos os dados do projeto.</li>
+        <li><b>Abrir (Ctrl+O)</b>: carrega um arquivo <code>.daf.json</code> salvo anteriormente.</li>
+        <li><b>Salvar Como</b>: salva com um nome diferente (útil para criar versões).</li>
+        <li><b>Exportar PDF</b>: use o botão na barra superior para imprimir todas as abas, ou os botões <b>"🖨 Imprimir esta seção"</b> nas abas individuais para exportar apenas aquela tabela (recomendado para projetos com muitos meses).</li>
+        <li><b>Exportar CSV</b>: gera 3 arquivos (Previsto, Executado, % Alteração) compatíveis com Excel.</li>
+        <li><b>Auto-save</b>: o sistema salva um rascunho automaticamente no navegador. Se fechar sem salvar, será oferecida a restauração na próxima abertura.</li>
+      </ul>
+    </div>
+
+    <div class="instr-block" style="background:#E3F2FD;">
+      <b>📋 Colar do Excel (Ctrl+V):</b>
+      <ul style="margin:8px 0 0 18px;line-height:1.8;">
+        <li>Selecione as células no Excel e copie (Ctrl+C).</li>
+        <li>Clique na <b>célula de destino</b> na tabela do sistema.</li>
+        <li>Cole (Ctrl+V) — os valores serão distribuídos pelas linhas e colunas a partir da célula selecionada.</li>
+        <li>Aceita separador decimal vírgula (<code>1.200,50</code>) e ponto (<code>1200.50</code>).</li>
+        <li>Colunas de texto (Elemento, Item de Despesa) também podem ser coladas diretamente.</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ TAB 1: CABEÇALHO ══════════════════════════════════════ -->
+<div class="tab-content" id="tab1">
+  <h2 class="print-title">2. Cabeçalho do Projeto</h2>
+  <h3 style="color:#1565C0;margin-bottom:16px;">📋 Dados do Projeto</h3>
+  <div class="form-grid">
+    <div class="form-span-2">
+      <label>Nome da OSC / Entidade</label>
+      <input type="text" id="hNomeOSC" oninput="onHeaderChange()">
+    </div>
+    <div class="form-span-2">
+      <label>Nome do Projeto</label>
+      <input type="text" id="hNomeProjeto" oninput="onHeaderChange()">
+    </div>
+    <div>
+      <label>Número do Termo (máx. 30 caracteres)</label>
+      <input type="text" id="hNumeroTermo" maxlength="30" oninput="onHeaderChange()">
+    </div>
+    <div>
+      <label>Processo SEI (máx. 20 caracteres)</label>
+      <input type="text" id="hProcessoSEI" maxlength="20" oninput="onHeaderChange()">
+    </div>
+    <div>
+      <label>Valor Total Previsto (VTP) — R$</label>
+      <input type="text" id="hVTP" oninput="onHeaderChange()" placeholder="0,00">
+    </div>
+    <div>
+      <label>Valor Total Repassado — R$</label>
+      <input type="text" id="hRepassado" oninput="onHeaderChange()" placeholder="0,00">
+    </div>
+    <div>
+      <label>Valor de Aplicação (Rendimentos) — R$</label>
+      <input type="text" id="hAplicacao" oninput="onHeaderChange()" placeholder="0,00">
+    </div>
+    <div></div>
+    <div>
+      <label>Data de Início</label>
+      <input type="date" id="hDataInicio" onchange="onDateChange()">
+    </div>
+    <div>
+      <label>Data de Fim</label>
+      <input type="date" id="hDataFim" onchange="onDateChange()">
+    </div>
+  </div>
+  <div class="form-actions">
+    <span id="totalMesesLabel" style="font-weight:bold;color:#1565C0;margin-right:16px;"></span>
+    <button class="btn-primary" onclick="switchTab(3)">Avançar → Previsto</button>
+  </div>
+</div>
+
+<!-- ═══ TAB 2: CONCILIAÇÃO BANCÁRIA ══════════════════════════ -->
+<div class="tab-content" id="tab2">
+  <h2 class="print-title">3. Conciliação Bancária</h2>
+  <h3 style="color:#1565C0;margin-bottom:16px;">🏦 Conciliação Bancária</h3>
+  <div class="placeholder-box">
+    <b>⚠ Seção em construção.</b><br><br>
+    Esta seção será implementada em uma próxima versão com base nas especificações de conciliação bancária a serem fornecidas.<br><br>
+    Por enquanto, prossiga para as abas de Previsto e Executado.
+  </div>
+</div>
+
+<!-- ═══ TAB 3: PREVISTO ══════════════════════════════════════ -->
+<div class="tab-content" id="tab3">
+  <h2 class="print-title">4. Previsto</h2>
+  <div class="table-toolbar">
+    <button class="btn-primary" onclick="addItem()">+ Adicionar Item</button>
+    <button class="btn-secondary" onclick="insertAbove('prev')">Inserir Acima</button>
+    <button class="btn-secondary" onclick="moveRow('prev',-1)" title="Mover para cima">▲</button>
+    <button class="btn-secondary" onclick="moveRow('prev',+1)" title="Mover para baixo">▼</button>
+    <button class="btn-danger" onclick="removeRow('prev')">✕ Remover</button>
+    <span class="vtp-display" id="vtpDisplay"></span>
+    <button class="btn-secondary" style="margin-left:auto;" onclick="imprimirSecao('previsto')" title="Imprime só esta tabela, dividindo em páginas se houver muitos meses">🖨 Imprimir esta seção</button>
+  </div>
+  <div class="table-wrapper" id="prevWrapper">
+    <table class="data-table" id="prevTable">
+      <thead><tr id="prevHead"></tr></thead>
+      <tbody id="prevBody"></tbody>
+      <tfoot><tr id="prevFoot"></tr></tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ TAB 4: EXECUTADO ═════════════════════════════════════ -->
+<div class="tab-content" id="tab4">
+  <h2 class="print-title">5. Executado</h2>
+  <div class="table-toolbar">
+    <button class="btn-green" onclick="addExecOnly()">+ Só Executado</button>
+    <span style="font-size:11px;background:#FFF9C4;padding:4px 8px;border-radius:3px;margin-left:12px;">⬛ Célula amarela = valor executado excede o previsto</span>
+    <button class="btn-secondary" style="margin-left:auto;" onclick="imprimirSecao('executado')" title="Imprime só esta tabela">🖨 Imprimir esta seção</button>
+  </div>
+  <div class="table-wrapper" id="execWrapper">
+    <table class="data-table" id="execTable">
+      <thead><tr id="execHead"></tr></thead>
+      <tbody id="execBody"></tbody>
+      <tfoot><tr id="execFoot"></tr></tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ TAB 5: % DE ALTERAÇÃO ════════════════════════════════ -->
+<div class="tab-content" id="tab5">
+  <h2 class="print-title">6. % de Alteração</h2>
+  <div class="pa-banner ok" id="paBanner">PA: 0,00% — Remanejamento dentro do limite de autonomia</div>
+  <div class="warnings-box" id="warningsBox"></div>
+  <div class="table-toolbar">
+    <button class="btn-primary" onclick="window.print()">📄 Exportar PDF (todas abas)</button>
+    <button class="btn-secondary" onclick="exportarCSV()">📊 Exportar CSV</button>
+    <button class="btn-secondary" onclick="imprimirSecao('alteracao')" title="Imprime só esta tabela, dividindo em páginas se houver muitos meses">🖨 Imprimir esta seção</button>
+  </div>
+  <div class="table-wrapper" id="altWrapper">
+    <table class="data-table" id="altTable">
+      <thead><tr id="altHead" class="alt-header"></tr></thead>
+      <tbody id="altBody"></tbody>
+      <tfoot><tr id="altFoot"></tr></tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ STATUS BAR ═══════════════════════════════════════════ -->
+<div class="statusbar">
+  <span id="statusFile">Nenhum arquivo aberto</span>
+  <span class="pa-badge pa-ok" id="statusPA">PA: 0,00%</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT — TODA A LÓGICA DA APLICAÇÃO
+     ═══════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ── Constantes ────────────────────────────────────────────────
+const ELEMENTOS = ['Pessoal','Materiais','Administrativas','Serviços de Terceiros','Outras Despesas','Imobilizado','Implantação'];
+const LS_KEY = 'daf_autosave';
+
+// ── Estado global ─────────────────────────────────────────────
+let data = createEmptyProject();
+let currentFileName = '';
+let isDirty = false;
+let selectedPrevIdx = -1;
+let selectedExecIdx = -1;
+
+function createEmptyProject() {
+  const now = new Date();
+  return {
+    Version: 1,
+    Header: {
+      NomeOSC: '', NomeProjeto: '', NumeroTermo: '', ProcessoSEI: '',
+      ValorTotalPrevisto: 0, ValorTotalRepassado: 0, ValorAplicacao: 0,
+      DataInicio: `${now.getFullYear()}-01-01T00:00:00`,
+      DataFim: `${now.getFullYear()}-12-31T00:00:00`
+    },
+    Items: [],
+    Historico: []
+  };
+}
+
+// ── Utilitários ───────────────────────────────────────────────
+function uuid() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
+function parseDecimal(str) {
+  if (typeof str === 'number') return str;
+  if (!str) return 0;
+  str = String(str).trim();
+  // Se tem vírgula e ponto, determina qual é o separador de milhar
+  if (str.includes(',') && str.includes('.')) {
+    if (str.lastIndexOf(',') > str.lastIndexOf('.'))
+      str = str.replace(/\./g, '').replace(',', '.'); // pt-BR: 1.234,56
+    else
+      str = str.replace(/,/g, ''); // en-US: 1,234.56
+  } else if (str.includes(',')) {
+    str = str.replace(/,/g, '.');
+  }
+  const v = parseFloat(str);
+  return isNaN(v) ? 0 : v;
+}
+
+function fmtMoney(v) {
+  return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function fmtDecimal(v) {
+  return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtPercent(v) {
+  return (v * 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
+}
+
+function getTotalMeses() {
+  const di = new Date(data.Header.DataInicio);
+  const df = new Date(data.Header.DataFim);
+  const m = (df.getFullYear() - di.getFullYear()) * 12 + df.getMonth() - di.getMonth() + 1;
+  return Math.max(1, m);
+}
+
+function getMonthLabel(idx) {
+  const di = new Date(data.Header.DataInicio);
+  const d = new Date(di.getFullYear(), di.getMonth() + idx, 1);
+  return d.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' });
+}
+
+function ensureCapacity(item) {
+  const t = getTotalMeses();
+  while (item.ValoresPrevisto.length < t) item.ValoresPrevisto.push(0);
+  while (item.ValoresExecutado.length < t) item.ValoresExecutado.push(0);
+  while (item.Justificativas.length < t) item.Justificativas.push('');
+}
+
+function markDirty() {
+  isDirty = true;
+  document.getElementById('dirtyFlag').classList.add('active');
+  autoSave();
+}
+
+function clearDirty() {
+  isDirty = false;
+  document.getElementById('dirtyFlag').classList.remove('active');
+}
+
+// ── Tabs ──────────────────────────────────────────────────────
+let currentTab = 0;
+function switchTab(idx) {
+  currentTab = idx;
+  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+  document.querySelectorAll('.tab-content').forEach((c, i) => c.classList.toggle('active', i === idx));
+  if (idx === 3) renderPrevisto();
+  if (idx === 4) renderExecutado();
+  if (idx === 5) renderAlteracao();
+}
+
+// ── Header ────────────────────────────────────────────────────
+function loadHeaderToForm() {
+  const h = data.Header;
+  document.getElementById('hNomeOSC').value = h.NomeOSC;
+  document.getElementById('hNomeProjeto').value = h.NomeProjeto;
+  document.getElementById('hNumeroTermo').value = h.NumeroTermo;
+  document.getElementById('hProcessoSEI').value = h.ProcessoSEI;
+  document.getElementById('hVTP').value = h.ValorTotalPrevisto ? fmtDecimal(h.ValorTotalPrevisto) : '';
+  document.getElementById('hRepassado').value = h.ValorTotalRepassado ? fmtDecimal(h.ValorTotalRepassado) : '';
+  document.getElementById('hAplicacao').value = h.ValorAplicacao ? fmtDecimal(h.ValorAplicacao) : '';
+  document.getElementById('hDataInicio').value = h.DataInicio.substring(0, 10);
+  document.getElementById('hDataFim').value = h.DataFim.substring(0, 10);
+  updateMesesLabel();
+}
+
+function readHeaderFromForm() {
+  const h = data.Header;
+  h.NomeOSC = document.getElementById('hNomeOSC').value;
+  h.NomeProjeto = document.getElementById('hNomeProjeto').value;
+  h.NumeroTermo = document.getElementById('hNumeroTermo').value;
+  h.ProcessoSEI = document.getElementById('hProcessoSEI').value;
+  h.ValorTotalPrevisto = parseDecimal(document.getElementById('hVTP').value);
+  h.ValorTotalRepassado = parseDecimal(document.getElementById('hRepassado').value);
+  h.ValorAplicacao = parseDecimal(document.getElementById('hAplicacao').value);
+  h.DataInicio = document.getElementById('hDataInicio').value + 'T00:00:00';
+  h.DataFim = document.getElementById('hDataFim').value + 'T00:00:00';
+}
+
+function onHeaderChange() {
+  readHeaderFromForm();
+  updateMesesLabel();
+  markDirty();
+}
+
+function onDateChange() {
+  const oldTotal = getTotalMeses();
+  readHeaderFromForm();
+  const newTotal = getTotalMeses();
+
+  // Avisar se dados fora do novo intervalo
+  if (newTotal < oldTotal && data.Items.length > 0) {
+    let hasData = data.Items.some(item =>
+      item.ValoresPrevisto.slice(newTotal).some(v => v !== 0) ||
+      item.ValoresExecutado.slice(newTotal).some(v => v !== 0)
+    );
+    if (hasData) {
+      alert(`⚠ Atenção: há valores preenchidos nos meses além do mês ${newTotal}.\n\nEsses dados não serão excluídos, mas ficarão fora do intervalo visível.\nPara acessá-los novamente, restaure o período original.`);
+    }
+  }
+
+  // Garantir capacidade
+  data.Items.forEach(item => ensureCapacity(item));
+  updateMesesLabel();
+  markDirty();
+  if (currentTab >= 3) switchTab(currentTab); // refresh table
+}
+
+function updateMesesLabel() {
+  const t = getTotalMeses();
+  document.getElementById('totalMesesLabel').textContent = `Período: ${t} mês(es)`;
+  document.getElementById('vtpDisplay').textContent = `VTP: ${fmtMoney(data.Header.ValorTotalPrevisto)}`;
+}
+
+// ── Criar / adicionar itens ───────────────────────────────────
+function createItem(execOnly = false) {
+  const item = {
+    Id: uuid(),
+    ElementoDespesa: ELEMENTOS[0],
+    Quantidade: 1,
+    ItemDespesa: '',
+    ValoresPrevisto: [],
+    ValoresExecutado: [],
+    Justificativas: [],
+    _execOnly: execOnly
+  };
+  ensureCapacity(item);
+  return item;
+}
+
+function addItem() {
+  data.Items.push(createItem());
+  markDirty();
+  renderPrevisto();
+  renderExecutado();
+}
+
+function addExecOnly() {
+  data.Items.push(createItem(true));
+  markDirty();
+  renderExecutado();
+  renderAlteracao();
+}
+
+function insertAbove(table) {
+  const idx = table === 'prev' ? selectedPrevIdx : selectedExecIdx;
+  if (idx < 0 || idx >= data.Items.length) { addItem(); return; }
+  const item = createItem();
+  data.Items.splice(idx, 0, item);
+  selectedPrevIdx = idx;
+  markDirty();
+  renderPrevisto();
+  renderExecutado();
+}
+
+function moveRow(table, dir) {
+  const idx = table === 'prev' ? selectedPrevIdx : selectedExecIdx;
+  if (idx < 0 || idx >= data.Items.length) return;
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= data.Items.length) return;
+  const temp = data.Items[idx];
+  data.Items[idx] = data.Items[newIdx];
+  data.Items[newIdx] = temp;
+  if (table === 'prev') selectedPrevIdx = newIdx;
+  else selectedExecIdx = newIdx;
+  markDirty();
+  renderPrevisto();
+  renderExecutado();
+}
+
+function removeRow(table) {
+  const idx = table === 'prev' ? selectedPrevIdx : selectedExecIdx;
+  if (idx < 0 || idx >= data.Items.length) return;
+  if (!confirm(`Remover o item "${data.Items[idx].ItemDespesa || '(sem nome)'}"?`)) return;
+  data.Items.splice(idx, 1);
+  selectedPrevIdx = -1;
+  selectedExecIdx = -1;
+  markDirty();
+  renderPrevisto();
+  renderExecutado();
+  renderAlteracao();
+}
+
+// ── Renderizar PREVISTO ───────────────────────────────────────
+function renderPrevisto() {
+  const totalMeses = getTotalMeses();
+  const thead = document.getElementById('prevHead');
+  const tbody = document.getElementById('prevBody');
+  const tfoot = document.getElementById('prevFoot');
+
+  // Header
+  thead.innerHTML = '<th>Elemento</th><th>Qtd</th><th>Item de Despesa</th>';
+  for (let j = 0; j < totalMeses; j++) thead.innerHTML += `<th>${getMonthLabel(j)}</th>`;
+  thead.innerHTML += '<th>Total</th>';
+
+  // Body
+  tbody.innerHTML = '';
+  const items = data.Items.filter(it => !it._execOnly);
+  items.forEach((item, displayIdx) => {
+    const realIdx = data.Items.indexOf(item);
+    ensureCapacity(item);
+    const tr = document.createElement('tr');
+    if (realIdx === selectedPrevIdx) tr.classList.add('selected');
+    tr.onclick = () => { selectedPrevIdx = realIdx; highlightRow('prevBody', displayIdx); };
+
+    // Elemento
+    let optHtml = ELEMENTOS.map(e => `<option${e === item.ElementoDespesa ? ' selected' : ''}>${e}</option>`).join('');
+    tr.innerHTML = `<td><select onchange="data.Items[${realIdx}].ElementoDespesa=this.value;markDirty()">${optHtml}</select></td>`;
+
+    // Qtd
+    tr.innerHTML += `<td><input type="number" class="qty-input" value="${item.Quantidade}" min="0" onchange="data.Items[${realIdx}].Quantidade=parseInt(this.value)||0;markDirty()"></td>`;
+
+    // Item de Despesa
+    tr.innerHTML += `<td><input type="text" class="item-input" value="${escHtml(item.ItemDespesa)}" onchange="data.Items[${realIdx}].ItemDespesa=this.value;markDirty()"></td>`;
+
+    // Meses
+    for (let j = 0; j < totalMeses; j++) {
+      const v = item.ValoresPrevisto[j] || 0;
+      tr.innerHTML += `<td><input type="text" value="${v ? fmtDecimal(v) : ''}" onfocus="this.select()" onchange="setPrevValue(${realIdx},${j},this.value)"></td>`;
+    }
+
+    // Total
+    const total = item.ValoresPrevisto.reduce((s, v) => s + v, 0);
+    tr.innerHTML += `<td class="total-col">${fmtDecimal(total)}</td>`;
+
+    tbody.appendChild(tr);
+  });
+
+  // Footer
+  tfoot.innerHTML = '<td colspan="3" style="text-align:right;"><b>TOTAL</b></td>';
+  let grandTotal = 0;
+  for (let j = 0; j < totalMeses; j++) {
+    const colSum = items.reduce((s, it) => s + (it.ValoresPrevisto[j] || 0), 0);
+    grandTotal += colSum;
+    tfoot.innerHTML += `<td style="text-align:right;">${fmtDecimal(colSum)}</td>`;
+  }
+  tfoot.innerHTML += `<td class="total-col">${fmtDecimal(grandTotal)}</td>`;
+
+  updateMesesLabel();
+}
+
+function setPrevValue(itemIdx, monthIdx, rawVal) {
+  data.Items[itemIdx].ValoresPrevisto[monthIdx] = parseDecimal(rawVal);
+  markDirty();
+  renderPrevisto();
+}
+
+// ── Renderizar EXECUTADO ──────────────────────────────────────
+function renderExecutado() {
+  const totalMeses = getTotalMeses();
+  const thead = document.getElementById('execHead');
+  const tbody = document.getElementById('execBody');
+  const tfoot = document.getElementById('execFoot');
+
+  thead.innerHTML = '<th>Elemento</th><th>Qtd</th><th>Item de Despesa</th>';
+  for (let j = 0; j < totalMeses; j++) thead.innerHTML += `<th>${getMonthLabel(j)}</th>`;
+  thead.innerHTML += '<th>Total</th>';
+
+  tbody.innerHTML = '';
+  data.Items.forEach((item, realIdx) => {
+    ensureCapacity(item);
+    const tr = document.createElement('tr');
+    if (item._execOnly) tr.classList.add('exec-only');
+    if (realIdx === selectedExecIdx) tr.classList.add('selected');
+    tr.onclick = () => { selectedExecIdx = realIdx; highlightRow('execBody', realIdx); };
+
+    // Info columns (read-only for non-execOnly, editable for execOnly)
+    if (item._execOnly) {
+      let optHtml = ELEMENTOS.map(e => `<option${e === item.ElementoDespesa ? ' selected' : ''}>${e}</option>`).join('');
+      tr.innerHTML = `<td><select onchange="data.Items[${realIdx}].ElementoDespesa=this.value;markDirty()">${optHtml}</select></td>`;
+      tr.innerHTML += `<td><input type="number" class="qty-input" value="${item.Quantidade}" min="0" onchange="data.Items[${realIdx}].Quantidade=parseInt(this.value)||0;markDirty()"></td>`;
+      tr.innerHTML += `<td><input type="text" class="item-input" value="${escHtml(item.ItemDespesa)}" onchange="data.Items[${realIdx}].ItemDespesa=this.value;markDirty()"></td>`;
+    } else {
+      tr.innerHTML = `<td class="readonly-cell">${escHtml(item.ElementoDespesa)}</td>`;
+      tr.innerHTML += `<td class="readonly-cell" style="text-align:center;">${item.Quantidade}</td>`;
+      tr.innerHTML += `<td class="readonly-cell">${escHtml(item.ItemDespesa)}</td>`;
+    }
+
+    // Month columns
+    for (let j = 0; j < totalMeses; j++) {
+      const v = item.ValoresExecutado[j] || 0;
+      const prev = item.ValoresPrevisto[j] || 0;
+      const isOver = v > prev;
+      tr.innerHTML += `<td class="${isOver ? 'overrun' : ''}"><input type="text" value="${v ? fmtDecimal(v) : ''}" onfocus="this.select()" onchange="setExecValue(${realIdx},${j},this.value)"></td>`;
+    }
+
+    const total = item.ValoresExecutado.reduce((s, v) => s + v, 0);
+    tr.innerHTML += `<td class="total-col">${fmtDecimal(total)}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  // Footer
+  tfoot.innerHTML = '<td colspan="3" style="text-align:right;"><b>TOTAL</b></td>';
+  let grandTotal = 0;
+  for (let j = 0; j < totalMeses; j++) {
+    const colSum = data.Items.reduce((s, it) => s + (it.ValoresExecutado[j] || 0), 0);
+    grandTotal += colSum;
+    tfoot.innerHTML += `<td style="text-align:right;">${fmtDecimal(colSum)}</td>`;
+  }
+  tfoot.innerHTML += `<td class="total-col">${fmtDecimal(grandTotal)}</td>`;
+}
+
+function setExecValue(itemIdx, monthIdx, rawVal) {
+  data.Items[itemIdx].ValoresExecutado[monthIdx] = parseDecimal(rawVal);
+  markDirty();
+  renderExecutado();
+  if (currentTab === 5) renderAlteracao();
+}
+
+// ── Renderizar % DE ALTERAÇÃO ─────────────────────────────────
+function renderAlteracao() {
+  const totalMeses = getTotalMeses();
+  const vtp = data.Header.ValorTotalPrevisto;
+  const thead = document.getElementById('altHead');
+  const tbody = document.getElementById('altBody');
+  const tfoot = document.getElementById('altFoot');
+
+  thead.innerHTML = '<th class="alt-header">Elemento</th><th class="alt-header">Qtd</th><th class="alt-header">Item de Despesa</th>';
+  for (let j = 0; j < totalMeses; j++) thead.innerHTML += `<th class="alt-header">${getMonthLabel(j)}</th>`;
+  thead.innerHTML += '<th class="alt-header">Total Item</th>';
+
+  tbody.innerHTML = '';
+  let paTotal = 0;
+
+  data.Items.forEach((item) => {
+    ensureCapacity(item);
+    const tr = document.createElement('tr');
+    if (item._execOnly) tr.classList.add('exec-only');
+
+    tr.innerHTML = `<td class="readonly-cell">${escHtml(item.ElementoDespesa)}</td>`;
+    tr.innerHTML += `<td class="readonly-cell" style="text-align:center;">${item.Quantidade}</td>`;
+    tr.innerHTML += `<td class="readonly-cell">${escHtml(item.ItemDespesa)}</td>`;
+
+    let itemPRA = 0;
+    for (let j = 0; j < totalMeses; j++) {
+      const pra = calcPRA(item, j, vtp);
+      itemPRA += pra;
+      paTotal += pra;
+      const display = pra > 0 ? fmtPercent(pra) : '0%';
+      tr.innerHTML += `<td class="${pra > 0 ? 'pra-positive' : ''}" style="text-align:center;">${display}</td>`;
+    }
+
+    tr.innerHTML += `<td class="alt-total">${itemPRA > 0 ? fmtPercent(itemPRA) : '0%'}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  // Footer
+  tfoot.innerHTML = '<td colspan="3" style="text-align:right;"><b>TOTAL</b></td>';
+  for (let j = 0; j < totalMeses; j++) {
+    const colPRA = data.Items.reduce((s, it) => s + calcPRA(it, j, vtp), 0);
+    tfoot.innerHTML += `<td style="text-align:center;font-weight:bold;">${colPRA > 0 ? fmtPercent(colPRA) : '0%'}</td>`;
+  }
+  tfoot.innerHTML += `<td class="alt-total">${fmtPercent(paTotal)}</td>`;
+
+  // Banner
+  const banner = document.getElementById('paBanner');
+  const paPct = paTotal * 100;
+  if (paPct <= 15) {
+    banner.className = 'pa-banner ok';
+    banner.textContent = `PA: ${fmtPercent(paTotal)} — Remanejamento dentro do limite de autonomia. Registre a justificativa no Demonstrativo de Aferição.`;
+  } else {
+    banner.className = 'pa-banner warn';
+    banner.textContent = `ATENÇÃO: Limite de 15% excedido (PA: ${fmtPercent(paTotal)}). Requer consulta e anuência prévia da Unidade Gestora.`;
+  }
+
+  // Status bar
+  const badge = document.getElementById('statusPA');
+  badge.textContent = `PA: ${fmtPercent(paTotal)}`;
+  badge.className = paPct <= 15 ? 'pa-badge pa-ok' : 'pa-badge pa-warn';
+
+  // Validations
+  runValidations();
+}
+
+function calcPRA(item, monthIdx, vtp) {
+  if (vtp === 0) return 0;
+  const exec = item.ValoresExecutado[monthIdx] || 0;
+  const prev = item.ValoresPrevisto[monthIdx] || 0;
+  const diff = exec - prev;
+  return diff > 0 ? diff / vtp : 0;
+}
+
+// ── Validações ────────────────────────────────────────────────
+function runValidations() {
+  const warnings = [];
+  const vtp = data.Header.ValorTotalPrevisto;
+  const totalExec = data.Items.reduce((s, it) => s + it.ValoresExecutado.reduce((a, b) => a + b, 0), 0);
+  const totalPrev = data.Items.reduce((s, it) => s + it.ValoresPrevisto.reduce((a, b) => a + b, 0), 0);
+  const teto = data.Header.ValorTotalRepassado + data.Header.ValorAplicacao;
+
+  if (teto > 0 && totalExec > teto) {
+    warnings.push(`• Total executado (${fmtMoney(totalExec)}) excede o limite disponível (Repassado ${fmtMoney(data.Header.ValorTotalRepassado)} + Rendimentos ${fmtMoney(data.Header.ValorAplicacao)} = ${fmtMoney(teto)}).`);
+  }
+  if (vtp > 0 && totalPrev > vtp) {
+    warnings.push(`• Total previsto (${fmtMoney(totalPrev)}) excede o VTP (${fmtMoney(vtp)}).`);
+  }
+  data.Items.forEach(item => {
+    if (item.ValoresPrevisto.reduce((a, b) => a + b, 0) > 0 && item.ValoresExecutado.reduce((a, b) => a + b, 0) === 0) {
+      warnings.push(`• Vedação de Exclusão: o item "${item.ItemDespesa || '(sem nome)'}" foi zerado. É proibido zerar um item sem anuência expressa.`);
+    }
+  });
+
+  const box = document.getElementById('warningsBox');
+  if (warnings.length > 0) {
+    box.innerHTML = warnings.join('<br>');
+    box.classList.add('active');
+  } else {
+    box.classList.remove('active');
+  }
+}
+
+// ── Seleção visual ────────────────────────────────────────────
+function highlightRow(tbodyId, idx) {
+  const rows = document.getElementById(tbodyId).querySelectorAll('tr');
+  rows.forEach((r, i) => r.classList.toggle('selected', i === idx));
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ── Colar do Excel (Ctrl+V) ──────────────────────────────────
+document.addEventListener('paste', function(e) {
+  const active = document.activeElement;
+  if (!active || !active.closest('.data-table')) return;
+
+  const table = active.closest('.data-table');
+  const isPrev = table.id === 'prevTable';
+  const isExec = table.id === 'execTable';
+  if (!isPrev && !isExec) return;
+
+  const text = (e.clipboardData || window.clipboardData).getData('text');
+  if (!text || !text.includes('\t')) return; // Só intercepta TSV (Excel)
+
+  e.preventDefault();
+
+  // Descobrir posição da célula ativa
+  const td = active.closest('td');
+  const tr = td.closest('tr');
+  const tbody = tr.closest('tbody');
+  const rowIdx = Array.from(tbody.children).indexOf(tr);
+  const colIdx = Array.from(tr.children).indexOf(td);
+
+  const rows = text.trimEnd().split('\n');
+  const items = isPrev ? data.Items.filter(it => !it._execOnly) : data.Items;
+
+  for (let r = 0; r < rows.length; r++) {
+    const targetRow = rowIdx + r;
+    if (targetRow >= items.length) break;
+    const item = items[targetRow];
+    const realIdx = data.Items.indexOf(item);
+    const cells = rows[r].trimEnd().split('\t');
+
+    for (let c = 0; c < cells.length; c++) {
+      const targetCol = colIdx + c;
+      const cellText = cells[c].trim();
+      if (!cellText) continue;
+
+      if (targetCol === 0) { // Elemento
+        if (ELEMENTOS.includes(cellText)) item.ElementoDespesa = cellText;
+      } else if (targetCol === 1) { // Qtd
+        const q = parseInt(cellText);
+        if (!isNaN(q)) item.Quantidade = q;
+      } else if (targetCol === 2) { // Item de Despesa
+        item.ItemDespesa = cellText;
+      } else { // Meses (colIdx 3+)
+        const monthIdx = targetCol - 3;
+        const totalMeses = getTotalMeses();
+        if (monthIdx >= 0 && monthIdx < totalMeses) {
+          const val = parseDecimal(cellText);
+          if (isPrev) item.ValoresPrevisto[monthIdx] = val;
+          else item.ValoresExecutado[monthIdx] = val;
+        }
+      }
+    }
+  }
+
+  markDirty();
+  if (isPrev) renderPrevisto();
+  if (isExec) renderExecutado();
+});
+
+// ── Salvar / Abrir / Novo ─────────────────────────────────────
+function salvarProjeto() {
+  readHeaderFromForm();
+  if (!currentFileName) { salvarComo(); return; }
+  downloadJSON(currentFileName);
+  clearDirty();
+}
+
+function salvarComo() {
+  readHeaderFromForm();
+  const nome = data.Header.NomeProjeto || 'projeto';
+  const fileName = prompt('Nome do arquivo:', `${nome}.daf.json`) || `${nome}.daf.json`;
+  currentFileName = fileName;
+  downloadJSON(fileName);
+  clearDirty();
+  document.getElementById('statusFile').textContent = `Arquivo: ${fileName}`;
+}
+
+function downloadJSON(fileName) {
+  // Limpar campo _execOnly dos itens para salvar JSON limpo
+  const exportData = JSON.parse(JSON.stringify(data));
+  exportData.Items.forEach(it => {
+    if (it._execOnly) it._execOnly = true; // mantém o campo
+  });
+  const json = JSON.stringify(exportData, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function abrirProjeto(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const loaded = JSON.parse(e.target.result);
+      // Retrocompatibilidade: se não tem _execOnly, todos são regulares
+      if (loaded.Items) {
+        loaded.Items.forEach(it => {
+          if (it._execOnly === undefined) it._execOnly = false;
+          if (!it.Justificativas) it.Justificativas = [];
+          ensureCapacityOnObj(it);
+        });
+      }
+      data = loaded;
+      currentFileName = file.name;
+      loadHeaderToForm();
+      selectedPrevIdx = -1;
+      selectedExecIdx = -1;
+      clearDirty();
+      document.getElementById('statusFile').textContent = `Arquivo: ${file.name}`;
+      switchTab(0);
+    } catch (err) {
+      alert('Erro ao abrir arquivo: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function ensureCapacityOnObj(item) {
+  const t = getTotalMeses();
+  if (!item.ValoresPrevisto) item.ValoresPrevisto = [];
+  if (!item.ValoresExecutado) item.ValoresExecutado = [];
+  if (!item.Justificativas) item.Justificativas = [];
+  while (item.ValoresPrevisto.length < t) item.ValoresPrevisto.push(0);
+  while (item.ValoresExecutado.length < t) item.ValoresExecutado.push(0);
+  while (item.Justificativas.length < t) item.Justificativas.push('');
+}
+
+// ── CSV ───────────────────────────────────────────────────────
+function exportarCSV() {
+  const totalMeses = getTotalMeses();
+  const vtp = data.Header.ValorTotalPrevisto;
+  const headers = ['Elemento', 'Qtd', 'Item de Despesa'];
+  for (let j = 0; j < totalMeses; j++) headers.push(getMonthLabel(j));
+  headers.push('Total');
+  const sep = ';';
+
+  function buildCSV(getValues, formatFn) {
+    let csv = headers.join(sep) + '\n';
+    data.Items.forEach(item => {
+      ensureCapacity(item);
+      const row = [
+        `"${item.ElementoDespesa}"`,
+        item.Quantidade,
+        `"${item.ItemDespesa}"`
+      ];
+      const vals = getValues(item);
+      let total = 0;
+      for (let j = 0; j < totalMeses; j++) {
+        const v = vals[j] || 0;
+        total += v;
+        row.push(formatFn ? formatFn(item, j) : fmtDecimal(v));
+      }
+      row.push(formatFn ? '' : fmtDecimal(total));
+      csv += row.join(sep) + '\n';
+    });
+    return csv;
+  }
+
+  downloadText('previsto.csv', buildCSV(it => it.ValoresPrevisto));
+  downloadText('executado.csv', buildCSV(it => it.ValoresExecutado));
+  downloadText('alteracao.csv', buildCSV(
+    it => it.ValoresExecutado,
+    (it, j) => fmtPercent(calcPRA(it, j, vtp))
+  ));
+}
+
+function downloadText(fileName, content) {
+  const blob = new Blob(['\uFEFF' + content], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Impressão por seção (com divisão de colunas para tabelas largas) ──────
+function imprimirSecao(secao) {
+  const FIXED_COLS = 3;  // Elemento, Qtd, Item de Despesa
+  const MAX_MONTH_COLS = 8; // máximo de colunas de meses por página impressa
+
+  let tableId, titulo, isPercent;
+  if (secao === 'previsto')  { tableId = 'prevTable';  titulo = '4. Previsto';         isPercent = false; }
+  if (secao === 'executado') { tableId = 'execTable';  titulo = '5. Executado';        isPercent = false; }
+  if (secao === 'alteracao') { tableId = 'altTable';   titulo = '6. % de Alteração';  isPercent = true;  }
+
+  const table = document.getElementById(tableId);
+  if (!table) return;
+
+  // Coletar cabeçalhos
+  const headRow = table.querySelector('thead tr');
+  const allHeaders = Array.from(headRow.cells).map(c => c.textContent.trim());
+  const fixedHeaders = allHeaders.slice(0, FIXED_COLS);
+  const monthHeaders = allHeaders.slice(FIXED_COLS, allHeaders.length - 1);
+  const totalHeader  = allHeaders[allHeaders.length - 1];
+
+  // Coletar linhas do body
+  const bodyRows = Array.from(table.querySelectorAll('tbody tr'));
+
+  // Coletar linha de totais do footer
+  const footRow = table.querySelector('tfoot tr');
+  const footCells = footRow ? Array.from(footRow.cells) : [];
+  // footCells[0] = colspan 3 label; depois colunas de meses; depois total
+  const footValues = [];
+  if (footCells.length > 1) {
+    for (let i = 1; i < footCells.length - 1; i++) footValues.push(footCells[i].textContent.trim());
+  }
+  const footTotal = footCells.length > 0 ? footCells[footCells.length - 1].textContent.trim() : '';
+
+  // Info do cabeçalho do projeto
+  const projInfo = [
+    `<b>OSC:</b> ${data.Header.NomeOSC || '—'} &nbsp;&nbsp; `,
+    `<b>Projeto:</b> ${data.Header.NomeProjeto || '—'} &nbsp;&nbsp; `,
+    `<b>VTP:</b> ${fmtMoney(data.Header.ValorTotalPrevisto)} &nbsp;&nbsp; `,
+    `<b>Período:</b> ${getMonthLabel(0)} a ${getMonthLabel(getTotalMeses()-1)}`
+  ].join('');
+
+  // Dividir meses em grupos
+  const groups = [];
+  for (let g = 0; g < monthHeaders.length; g += MAX_MONTH_COLS) {
+    groups.push({ start: g, headers: monthHeaders.slice(g, g + MAX_MONTH_COLS) });
+  }
+  if (groups.length === 0) groups.push({ start: 0, headers: [] });
+
+  // Construir HTML para a janela de impressão
+  let html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+  <style>
+    @page { size: A4 landscape; margin: 10mm; }
+    body { font-family: 'Segoe UI', sans-serif; font-size: 9px; color: #212121; }
+    h2 { font-size: 13px; color: #1565C0; margin: 0 0 4px 0; }
+    .proj-info { font-size: 9px; color: #555; margin-bottom: 8px; }
+    .group-label { font-size: 10px; font-weight: bold; color: #555; margin: 10px 0 3px; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 4px; }
+    th { background: #333; color: #fff; padding: 4px 5px; font-size: 8px; white-space: nowrap; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .alt-th { background: #4A148C !important; }
+    td { padding: 3px 5px; border: 1px solid #ccc; font-size: 8px; white-space: nowrap; }
+    .total-col { background: #E3F2FD; font-weight: bold; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .alt-total { background: #EDE7F6; font-weight: bold; text-align:center; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .overrun { background: #FFEB3B !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .pra-pos { background: #FFF9C4 !important; font-weight:bold; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .exec-only td { background: #E8F5E9 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    tfoot td { background: #F5F5F5; font-weight:bold; border-top: 2px solid #1565C0; text-align:right; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .page-break { page-break-before: always; }
+    @media screen { body { padding: 16px; } }
+  </style>
+  <title>${titulo}</title></head><body>`;
+
+  html += `<h2>Painel do Demonstrativo de Aferição — ${titulo}</h2><div class="proj-info">${projInfo}</div>`;
+
+  groups.forEach((group, gi) => {
+    const thClass = isPercent ? 'alt-th' : '';
+    const isLast = gi === groups.length - 1;
+    if (groups.length > 1) {
+      const rangeLabel = group.headers.length > 0 ? `${group.headers[0]} a ${group.headers[group.headers.length-1]}` : 'sem meses';
+      html += `<div class="group-label ${gi > 0 ? 'page-break' : ''}">Parte ${gi+1}/${groups.length} — Meses: ${rangeLabel}</div>`;
+    }
+
+    html += `<table><thead><tr>`;
+    fixedHeaders.forEach(h => html += `<th class="${thClass}">${h}</th>`);
+    group.headers.forEach(h => html += `<th class="${thClass}" style="text-align:center">${h}</th>`);
+    if (isLast) html += `<th class="${thClass}" style="text-align:center">${totalHeader}</th>`;
+    html += `</tr></thead><tbody>`;
+
+    bodyRows.forEach(row => {
+      const cells = Array.from(row.cells);
+      const isExecOnly = row.classList.contains('exec-only');
+      html += `<tr${isExecOnly ? ' class="exec-only"' : ''}>` ;
+      // Fixed cols
+      for (let f = 0; f < FIXED_COLS; f++) {
+        const inp = cells[f].querySelector('input,select');
+        const txt = inp ? inp.value : cells[f].textContent.trim();
+        html += `<td>${txt}</td>`;
+      }
+      // Month cols for this group
+      const globalOffset = FIXED_COLS + group.start;
+      for (let c = 0; c < group.headers.length; c++) {
+        const cell = cells[globalOffset + c];
+        if (!cell) { html += '<td></td>'; continue; }
+        const inp = cell.querySelector('input');
+        const val = inp ? inp.value : cell.textContent.trim();
+        const cls = cell.classList.contains('overrun') ? 'overrun'
+                  : cell.classList.contains('pra-positive') ? 'pra-pos' : '';
+        html += `<td class="${cls}" style="text-align:right">${val}</td>`;
+      }
+      // Total col only on last group
+      if (isLast) {
+        const lastCell = cells[cells.length - 1];
+        const cls = lastCell.classList.contains('total-col') ? 'total-col' : 'alt-total';
+        html += `<td class="${cls}">${lastCell.textContent.trim()}</td>`;
+      }
+      html += `</tr>`;
+    });
+    html += `</tbody><tfoot><tr>`;
+    html += `<td colspan="${FIXED_COLS}" style="text-align:right"><b>TOTAL</b></td>`;
+    for (let c = 0; c < group.headers.length; c++) {
+      const vi = group.start + c;
+      html += `<td style="text-align:center">${footValues[vi] || ''}</td>`;
+    }
+    if (isLast) html += `<td class="${isPercent ? 'alt-total' : 'total-col'}">${footTotal}</td>`;
+    html += `</tr></tfoot></table>`;
+  });
+
+  html += `<script>window.onload=function(){window.print();}<\/script></body></html>`;
+
+  const w = window.open('', '_blank', 'width=900,height=700');
+  if (w) { w.document.write(html); w.document.close(); }
+  else alert('O navegador bloqueou o pop-up. Permita pop-ups para este site e tente novamente.');
+}
+
+// ── localStorage auto-save ────────────────────────────────────
+function autoSave() {
+  try {
+    readHeaderFromForm();
+    localStorage.setItem(LS_KEY, JSON.stringify(data));
+  } catch (e) { /* localStorage cheio ou indisponível */ }
+}
+
+function tryRestoreAutoSave() {
+  try {
+    const saved = localStorage.getItem(LS_KEY);
+    if (!saved) return;
+    const restored = JSON.parse(saved);
+    if (restored && restored.Items && restored.Items.length > 0) {
+      if (confirm('Há um rascunho salvo automaticamente. Deseja restaurá-lo?')) {
+        restored.Items.forEach(it => {
+          if (it._execOnly === undefined) it._execOnly = false;
+          ensureCapacityOnObj(it);
+        });
+        data = restored;
+        loadHeaderToForm();
+        return;
+      }
+    }
+  } catch (e) { /* ignora */ }
+}
+
+// ── Atalhos de teclado ────────────────────────────────────────
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.key === 's') {
+    e.preventDefault();
+    salvarProjeto();
+  }
+  if (e.ctrlKey && e.key === 'o') {
+    e.preventDefault();
+    document.getElementById('fileOpen').click();
+  }
+});
+
+// ── Aviso ao fechar com alterações não salvas ─────────────────
+window.addEventListener('beforeunload', function(e) {
+  if (isDirty) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+
+// ── PWA Service Worker ────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// ── Inicialização ─────────────────────────────────────────────
+(function init() {
+  // Definir datas padrão
+  const now = new Date();
+  document.getElementById('hDataInicio').value = `${now.getFullYear()}-01-01`;
+  document.getElementById('hDataFim').value = `${now.getFullYear()}-12-31`;
+  readHeaderFromForm();
+
+  tryRestoreAutoSave();
+  loadHeaderToForm();
+  updateMesesLabel();
+})();
+</script>
+
+</body>
+</html>
