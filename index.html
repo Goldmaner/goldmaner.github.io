@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel do Demonstrativo de Aferição</title>
+<title>Central de Documentos — Departamento de Direitos Humanos</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1565C0">
 <style>
@@ -139,6 +139,106 @@ input, select { font-family: inherit; font-size: 13px; }
   h2.print-title { display: block !important; font-size: 14px; margin-bottom: 8px; }
 }
 h2.print-title { display: none; }
+
+/* ═════════════════════════════════════════════════════
+   LANDING PAGE
+   ═════════════════════════════════════════════════════ */
+.landing {
+  min-height: 100vh;
+  background: linear-gradient(160deg, #0D47A1 0%, #1565C0 40%, #1976D2 70%, #1E88E5 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  gap: 40px;
+}
+.landing-header {
+  text-align: center;
+  color: #fff;
+}
+.landing-logo {
+  font-size: 48px;
+  margin-bottom: 12px;
+  display: block;
+}
+.landing-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  line-height: 1.35;
+  margin-bottom: 8px;
+}
+.landing-subtitle {
+  font-size: 14px;
+  opacity: .8;
+  font-weight: 400;
+}
+.landing-cards {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.landing-card {
+  background: #fff;
+  border-radius: 16px;
+  width: 260px;
+  padding: 36px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(0,0,0,.18);
+  transition: transform .18s, box-shadow .18s;
+  border: 3px solid transparent;
+  text-align: center;
+  position: relative;
+}
+.landing-card:hover:not(.landing-card-disabled) {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(0,0,0,.25);
+  border-color: #1565C0;
+}
+.landing-card-disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+.landing-card-icon {
+  font-size: 52px;
+  line-height: 1;
+}
+.landing-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1565C0;
+}
+.landing-card-desc {
+  font-size: 12px;
+  color: #555;
+  line-height: 1.5;
+}
+.landing-card-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: #FF8F00;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  letter-spacing: .5px;
+}
+.landing-footer {
+  color: rgba(255,255,255,.55);
+  font-size: 11px;
+  text-align: center;
+}
+
+/* Esconde o app enquanto landing está visível */
+#appShell { display: none; }
 </style>
 </head>
 <body>
@@ -162,6 +262,7 @@ h2.print-title { display: none; }
     <h1>📊 Painel do Demonstrativo de Aferição</h1>
     <span class="app-subtitle">Demonstrativo de Aferição de Remanejamento Orçamentário — Gestão de Parcerias OSC</span>
   </div>
+  <button onclick="voltarLanding()" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.4);padding:5px 12px;border-radius:4px;font-size:12px;cursor:pointer;margin-left:auto;">← Início</button>
 </div>
 
 <!-- ═══ TABS ══════════════════════════════════════════════════ -->
@@ -1260,7 +1361,18 @@ if ('serviceWorker' in navigator) {
   loadHeaderToForm();
   updateMesesLabel();
 })();
+
+// ── Navegação landing ↔ app ─────────────────────────────────
+function entrarComoOSC() {
+  document.getElementById('landingPage').style.display = 'none';
+  document.getElementById('appShell').style.display = 'block';
+}
+function voltarLanding() {
+  document.getElementById('appShell').style.display = 'none';
+  document.getElementById('landingPage').style.display = 'flex';
+}
 </script>
 
+</div><!-- /#appShell -->
 </body>
 </html>
