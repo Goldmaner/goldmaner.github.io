@@ -243,6 +243,42 @@ h2.print-title { display: none; }
 </head>
 <body>
 
+<!-- ═══ LANDING PAGE ══════════════════════════════════════════ -->
+<div class="landing" id="landingPage">
+
+  <div class="landing-header">
+    <span class="landing-logo">🏙️</span>
+    <div class="landing-title">Bem-vindo à Central de Documentos e Seções<br>do Departamento de Direitos Humanos</div>
+    <div class="landing-subtitle">Selecione seu perfil de acesso para continuar</div>
+  </div>
+
+  <div class="landing-cards">
+
+    <div class="landing-card" onclick="entrarComoOSC()">
+      <div class="landing-card-icon">🏢</div>
+      <div class="landing-card-title">Sou OSC</div>
+      <div class="landing-card-desc">Acesse o Painel do Demonstrativo de Aferição de Remanejamento Orçamentário.</div>
+    </div>
+
+    <div class="landing-card landing-card-disabled">
+      <div class="landing-card-badge">EM BREVE</div>
+      <div class="landing-card-icon">💼</div>
+      <div class="landing-card-title">Sou Pessoa Gestora</div>
+      <div class="landing-card-desc">Painel de gestão, acompanhamento e administração de parcerias. Em construção.</div>
+    </div>
+
+  </div>
+
+  <div class="landing-footer">
+    Central de Documentos — Departamento de Direitos Humanos<br>
+    Todos os dados são salvos localmente no seu dispositivo.
+  </div>
+
+</div>
+
+<!-- ═══ APP SHELL ══════════════════════════════════════════════ -->
+<div id="appShell">
+
 <!-- ═══ TOOLBAR ═══════════════════════════════════════════════ -->
 <div class="toolbar" id="toolbar">
   <button class="btn-save" onclick="salvarProjeto()" title="Ctrl+S">💾 SALVAR</button>
