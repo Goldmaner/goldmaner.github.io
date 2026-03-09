@@ -1,12 +1,12 @@
-// Service Worker — Cache-first para uso offline
-const CACHE_NAME = 'daf-afericao-v1';
+// Service Worker — Network-first com fallback offline
+const CACHE_NAME = 'daf-afericao-v3';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json'
 ];
 
-// Instala e cacheia todos os assets
+// Instala e cacheia os assets essenciais para uso offline
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -24,22 +24,21 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Estratégia: cache-first, fallback para rede
+// Estratégia: network-first, fallback para cache se offline
 self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(response => {
-        // Cacheia novos requests bem-sucedidos
-        if (response.ok && event.request.method === 'GET') {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        }
-        return response;
-      });
+    fetch(event.request).then(response => {
+      // Atualiza o cache com a resposta mais recente
+      if (response.ok) {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+      }
+      return response;
     }).catch(() => {
-      // Offline e não em cache — retorna o index.html como fallback
-      return caches.match('./index.html');
+      // Sem rede — entrega do cache
+      return caches.match(event.request)
+        .then(cached => cached || caches.match('./index.html'));
     })
   );
 });
