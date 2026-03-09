@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Demonstrativo de Aferição — Central de Parcerias DDH</title>
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="../manifest.json">
 <meta name="theme-color" content="#1565C0">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -131,7 +131,7 @@ h2.print-title { display: none; }
     <h1>📊 Painel do Demonstrativo de Aferição</h1>
     <span class="app-subtitle">Demonstrativo de Aferição de Remanejamento Orçamentário — Gestão de Parcerias OSC</span>
   </div>
-  <button onclick="window.location='index.html'" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.4);padding:5px 12px;border-radius:4px;font-size:12px;cursor:pointer;margin-left:auto;">← Painéis OSC</button>
+  <button onclick="window.location='../index.html#osc'" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.4);padding:5px 12px;border-radius:4px;font-size:12px;cursor:pointer;margin-left:auto;">← Painéis OSC</button>
 </div>
 
 <!-- ═══ TABS ══════════════════════════════════════════════════ -->
@@ -1025,7 +1025,7 @@ window.addEventListener('beforeunload', function(e) {
 });
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+  navigator.serviceWorker.register('../sw.js').catch(() => {});
 }
 
 (function init() {

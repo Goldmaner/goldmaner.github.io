@@ -292,13 +292,13 @@ h2.print-title { display: none; }
       <div class="landing-card-desc">Controle e documente remanejamentos orçamentários. Calcule o PA acumulado e o limite de 15% sobre o VTP.</div>
     </div>
 
-    <div class="landing-card" onclick="window.location='oficio.html'">
+    <div class="landing-card" onclick="window.location='Pages/oficio.html'">
       <div class="landing-card-icon">📝</div>
       <div class="landing-card-title">Formulário de Ofício de Alteração</div>
       <div class="landing-card-desc">Geração do ofício formal de solicitação de alteração orçamentária para a Unidade Gestora.</div>
     </div>
 
-    <div class="landing-card" onclick="window.location='relatorio.html'">
+    <div class="landing-card" onclick="window.location='Pages/relatorio.html'">
       <div class="landing-card-icon">📅</div>
       <div class="landing-card-title">Relatório de Execução Financeira</div>
       <div class="landing-card-desc">Geração de relatórios periódicos de execução físico-financeira da parceria.</div>
@@ -345,7 +345,7 @@ h2.print-title { display: none; }
       <div class="landing-card-desc">Elaboração de relatórios técnicos de acompanhamento e avaliação das parcerias.</div>
     </div>
 
-    <div class="landing-card" onclick="window.location='encaminhamento.html'">
+    <div class="landing-card" onclick="window.location='Pages/encaminhamento.html'">
       <div class="landing-card-icon">📝</div>
       <div class="landing-card-title">Encaminhamento de Alteração de Parceria</div>
       <div class="landing-card-desc">Elaboração do modelo de encaminhamento de solicitação de alterações para o SEI.</div>
@@ -1484,6 +1484,11 @@ if ('serviceWorker' in navigator) {
   tryRestoreAutoSave();
   loadHeaderToForm();
   updateMesesLabel();
+
+  // Restaurar landing correta ao voltar de página terciária
+  const h = location.hash;
+  if (h === '#osc') { showLandingOSC(); history.replaceState(null, '', location.pathname); }
+  else if (h === '#gestor') { showLandingGestor(); history.replaceState(null, '', location.pathname); }
 })();
 
 // ── Navegação landing ↔ app ─────────────────────────────────
@@ -1500,7 +1505,7 @@ function voltarLandingGestor() {
   document.getElementById('landingPage').style.display = 'flex';
 }
 function entrarComoOSC() {
-  window.location = 'demonstrativo.html';
+  window.location = 'Pages/demonstrativo.html';
 }
 function voltarLandingOSC() {
   document.getElementById('appShell').style.display = 'none';
