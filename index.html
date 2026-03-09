@@ -254,10 +254,10 @@ h2.print-title { display: none; }
 
   <div class="landing-cards">
 
-    <div class="landing-card" onclick="entrarComoOSC()">
+    <div class="landing-card" onclick="showLandingOSC()">
       <div class="landing-card-icon">🏢</div>
       <div class="landing-card-title">Sou OSC</div>
-      <div class="landing-card-desc">Acesse o Painel do Demonstrativo de Aferição de Remanejamento Orçamentário.</div>
+      <div class="landing-card-desc">Acesse os painéis e ferramentas disponíveis para Organizações da Sociedade Civil.</div>
     </div>
 
     <div class="landing-card landing-card-disabled">
@@ -298,7 +298,7 @@ h2.print-title { display: none; }
     <h1>📊 Painel do Demonstrativo de Aferição</h1>
     <span class="app-subtitle">Demonstrativo de Aferição de Remanejamento Orçamentário — Gestão de Parcerias OSC</span>
   </div>
-  <button onclick="voltarLanding()" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.4);padding:5px 12px;border-radius:4px;font-size:12px;cursor:pointer;margin-left:auto;">← Início</button>
+  <button onclick="voltarLandingOSC()" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.4);padding:5px 12px;border-radius:4px;font-size:12px;cursor:pointer;margin-left:auto;">← Painéis OSC</button>
 </div>
 
 <!-- ═══ TABS ══════════════════════════════════════════════════ -->
@@ -1399,12 +1399,20 @@ if ('serviceWorker' in navigator) {
 })();
 
 // ── Navegação landing ↔ app ─────────────────────────────────
-function entrarComoOSC() {
+function showLandingOSC() {
   document.getElementById('landingPage').style.display = 'none';
+  document.getElementById('landingOSC').style.display = 'flex';
+}
+function entrarComoOSC() {
+  document.getElementById('landingOSC').style.display = 'none';
   document.getElementById('appShell').style.display = 'block';
 }
-function voltarLanding() {
+function voltarLandingOSC() {
   document.getElementById('appShell').style.display = 'none';
+  document.getElementById('landingOSC').style.display = 'flex';
+}
+function voltarLanding() {
+  document.getElementById('landingOSC').style.display = 'none';
   document.getElementById('landingPage').style.display = 'flex';
 }
 </script>
