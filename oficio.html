@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ofício de Solicitação de Alterações</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #FAFAFA; color: #212121; font-size: 14px; }
+button { cursor: pointer; font-family: inherit; }
+
+/* ── Toolbar ────────────────────────────────────────────────── */
+.toolbar { background: #1565C0; padding: 8px 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.toolbar-title { color: #fff; font-size: 15px; font-weight: 700; flex: 1; }
+.btn { font-size: 13px; padding: 7px 14px; border-radius: 4px; border: none; font-weight: 600; }
+.btn-back  { background: rgba(255,255,255,.15); color: #fff; border: 1px solid rgba(255,255,255,.4); }
+.btn-back:hover  { background: rgba(255,255,255,.25); }
+.btn-print { background: #43A047; color: #fff; }
+.btn-print:hover { background: #2E7D32; }
+.btn-clear { background: #E53935; color: #fff; }
+.btn-clear:hover { background: #C62828; }
+
+/* ── Container ─────────────────────────────────────────────── */
+.container { max-width: 860px; margin: 24px auto; padding: 0 16px 60px; }
+.autosave-bar { font-size: 11px; color: #888; text-align: right; margin-bottom: 10px; }
+
+/* ── Sections ──────────────────────────────────────────────── */
+.section { background: #fff; border-radius: 8px; border: 1px solid #E0E0E0; padding: 20px 24px; margin-bottom: 16px; }
+.section-title { font-size: 12px; font-weight: 700; color: #1565C0; text-transform: uppercase; letter-spacing: .6px; border-bottom: 2px solid #E3F2FD; padding-bottom: 8px; margin-bottom: 16px; }
+
+/* ── Form fields ───────────────────────────────────────────── */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; margin-bottom: 12px; }
+.form-row.cols-1 { grid-template-columns: 1fr; }
+.form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.form-row:last-child { margin-bottom: 0; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field-span-2 { grid-column: span 2; }
+.field label { font-size: 12px; font-weight: 600; color: #555; }
+.field input, .field textarea {
+  padding: 8px 10px; border: 1px solid #BDBDBD; border-radius: 4px;
+  font-family: inherit; font-size: 13px; color: #212121;
+}
+.field input:focus, .field textarea:focus {
+  outline: none; border-color: #1565C0;
+  box-shadow: 0 0 0 2px rgba(21,101,192,.15);
+}
+.field textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
+
+/* ── Checklist ─────────────────────────────────────────────── */
+.check-help { font-size: 12px; color: #555; margin-bottom: 12px; }
+.check-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px 10px; }
+label.check-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 12px; cursor: pointer;
+  padding: 7px 9px; border-radius: 5px;
+  border: 1px solid #E0E0E0; background: #FAFAFA;
+  transition: background .12s, border-color .12s;
+  line-height: 1.35;
+}
+label.check-item:hover { background: #E3F2FD; border-color: #90CAF9; }
+label.check-item.checked { background: #E3F2FD; border-color: #1565C0; font-weight: 600; }
+label.check-item input[type="checkbox"] { margin-top: 2px; accent-color: #1565C0; width: 14px; height: 14px; flex-shrink: 0; }
+
+/* ── Signature block ───────────────────────────────────────── */
+.sig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 24px; }
+.sig-line { border-bottom: 1px solid #888; margin-top: 40px; }
+.sig-label { font-size: 11px; color: #555; margin-top: 5px; }
+
+/* ── Print letterhead (hidden on screen) ───────────────────── */
+.print-letterhead { display: none; }
+
+/* ══════════════════════════════════════════════════════════════
+   PRINT
+   ══════════════════════════════════════════════════════════════ */
+@media print {
+  @page { size: A4 portrait; margin: 20mm 25mm; }
+  body { background: #fff !important; font-size: 10.5pt; color: #000; }
+
+  .toolbar, .autosave-bar, .no-print { display: none !important; }
+
+  .container { max-width: 100%; margin: 0; padding: 0; }
+  .section { border: none !important; padding: 0 !important; margin-bottom: 14pt; box-shadow: none; border-radius: 0; }
+  .section-title { color: #000 !important; font-size: 9pt; border-bottom: 1pt solid #000 !important; padding-bottom: 3pt; margin-bottom: 8pt; }
+
+  /* Letterhead shown on print */
+  .print-letterhead { display: block !important; text-align: center; margin-bottom: 16pt; }
+  .print-letterhead-org   { font-size: 11pt; font-weight: 700; text-transform: uppercase; }
+  .print-letterhead-sec   { font-size: 10pt; }
+  .print-letterhead-hr    { border: none; border-top: 2pt solid #000; margin: 6pt 0 10pt; }
+  .print-oficio-num       { font-size: 11pt; font-weight: 700; margin-bottom: 10pt; }
+  .print-opening          { font-size: 10.5pt; line-height: 1.8; text-align: justify; margin-bottom: 10pt; }
+
+  /* Fields become plain text */
+  .field label { display: none; }
+  .field input, .field textarea {
+    border: none !important; box-shadow: none !important;
+    padding: 0 !important; font-size: 10.5pt;
+    background: transparent !important; width: 100%;
+  }
+
+  /* Hide identification section fields (already in opening paragraph) */
+  #sec-identificacao { display: none !important; }
+
+  /* Checklist */
+  .check-grid { grid-template-columns: repeat(2, 1fr); gap: 3pt 16pt; }
+  label.check-item {
+    border: none !important; background: transparent !important;
+    padding: 2pt 0 !important; font-size: 10pt; gap: 6pt;
+  }
+  label.check-item input[type="checkbox"] { display: none; }
+  label.check-item::before { content: '(  )'; font-size: 10pt; }
+  label.check-item.checked::before { content: '( ✓ )'; font-weight: bold; }
+
+  .sig-grid { grid-template-columns: 1fr 1fr; gap: 24pt; margin-top: 28pt; }
+  .sig-line { border-bottom: 1pt solid #000; margin-top: 44pt; }
+
+  .section { page-break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ TOOLBAR ════════════════════════════════════════════════ -->
+<div class="toolbar no-print">
+  <span class="toolbar-title">📝 Formulário de Ofício de Solicitação de Alterações</span>
+  <button class="btn btn-back"  onclick="window.location='index.html'">← Voltar</button>
+  <button class="btn btn-clear" onclick="limparFormulario()">🗑 Limpar</button>
+  <button class="btn btn-print" onclick="gerarPDF()">🖨 Gerar PDF</button>
+</div>
+
+<div class="container">
+  <div class="autosave-bar" id="autosaveLabel">Aguardando dados…</div>
+
+  <!-- ══ CABEÇALHO DE IMPRESSÃO (invisível na tela) ══════════════ -->
+  <div class="print-letterhead">
+    <div class="print-letterhead-org">Secretaria de Estado dos Direitos da Pessoa Humana</div>
+    <div class="print-letterhead-sec">Departamento de Direitos Humanos</div>
+    <hr class="print-letterhead-hr">
+    <div class="print-oficio-num" id="printOficioNum"></div>
+    <div class="print-opening"    id="printOpening"></div>
+  </div>
+
+  <!-- ══ 1. IDENTIFICAÇÃO ════════════════════════════════════════ -->
+  <div class="section" id="sec-identificacao">
+    <div class="section-title">1. Identificação do Solicitante</div>
+    <div class="form-row">
+      <div class="field">
+        <label>Nome completo do responsável legal *</label>
+        <input type="text" id="nomeResponsavel" placeholder="Nome completo" oninput="salvarRascunho(); atualizarSigLabels();">
+      </div>
+      <div class="field">
+        <label>Cargo / Função *</label>
+        <input type="text" id="cargoFuncao" placeholder="ex: Presidente, Diretor Executivo" oninput="salvarRascunho(); atualizarSigLabels();">
+      </div>
+    </div>
+    <div class="form-row cols-1">
+      <div class="field">
+        <label>Nome completo da OSC *</label>
+        <input type="text" id="nomeOSC" placeholder="Razão social da organização" oninput="salvarRascunho()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>CNPJ da OSC *</label>
+        <input type="text" id="cnpjOSC" placeholder="00.000.000/0001-00" oninput="salvarRascunho()">
+      </div>
+      <div class="field">
+        <label>Nº do Instrumento / Termo de Parceria *</label>
+        <input type="text" id="numeroTermo" placeholder="ex: TC-001/2026" oninput="salvarRascunho()">
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 2. TIPOS DE ALTERAÇÃO ═══════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">2. Tipo de Alteração Solicitada</div>
+    <p class="check-help">Assinale todas as opções pertinentes:</p>
+    <div class="check-grid" id="checkGrid"></div>
+  </div>
+
+  <!-- ══ 3. DEMARCAÇÃO ══════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">3. Demarcação da(s) Alteração(ões) Solicitada(s)</div>
+    <p class="check-help">Descreva detalhadamente as alterações propostas, informando o texto atual e a redação pretendida (ou novos valores / datas). Se houver documentação complementar, inclua aqui ou referencie-a.</p>
+    <div class="field">
+      <textarea id="demarcacao" rows="8" placeholder="Informe o texto atual e a nova redação, ou os valores/datas alterados…" oninput="salvarRascunho()"></textarea>
+    </div>
+  </div>
+
+  <!-- ══ 4. FUNDAMENTAÇÃO ═══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">4. Fundamentação e/ou Justificativa da Alteração</div>
+    <p class="check-help">Indique as razões técnicas, jurídicas e administrativas que motivam a solicitação.</p>
+    <div class="field">
+      <textarea id="fundamentacao" rows="7" placeholder="Descreva as razões que fundamentam a solicitação…" oninput="salvarRascunho()"></textarea>
+    </div>
+  </div>
+
+  <!-- ══ 5. ASSINATURA ══════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">5. Local, Data e Assinatura</div>
+    <div class="form-row">
+      <div class="field">
+        <label>Local</label>
+        <input type="text" id="local" placeholder="ex: São Paulo" oninput="salvarRascunho()">
+      </div>
+      <div class="field">
+        <label>Data</label>
+        <input type="date" id="data" oninput="salvarRascunho()">
+      </div>
+    </div>
+    <div class="sig-grid">
+      <div>
+        <div class="sig-line"></div>
+        <div class="sig-label" id="sigNome">Nome completo do responsável legal</div>
+      </div>
+      <div>
+        <div class="sig-line"></div>
+        <div class="sig-label" id="sigCargo">Cargo / Função</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+'use strict';
+
+const LS_KEY = 'oficio_rascunho';
+
+const TIPOS = [
+  'Nome do projeto',
+  'Nome da organização',
+  'CNPJ da organização',
+  'Nome do responsável legal',
+  'Objeto da parceria',
+  'Quantidade de beneficiários diretos',
+  'Faixa etária de beneficiários',
+  'Localização do projeto',
+  'Aumento de valor total da parceria',
+  'Redução de valor total da parceria',
+  'Remanejamentos sem alteração de valor de parcela (alteração de valores da proposta orçamentária ou orçamento anual)',
+  'Conta bancária (FACC)',
+  'Prorrogação de vigência',
+  'Adequação de vigência',
+  'Redução de vigência da parceria',
+  'Suspensão de vigência da parceria',
+  'Retomada de vigência da parceria',
+  'Metas do projeto',
+  'Cronograma de execução',
+  'Justificativa do Projeto',
+  'Abrangência geográfica',
+  'Remanejamentos com alteração de valor de parcela',
+  'Objetivo geral',
+  'Objetivo específico',
+  'Cronograma de desembolso',
+  'Endereço da sede da Organização',
+  'Rescisão unilateral',
+];
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Renderizar checkboxes ──────────────────────────────────────
+function renderChecks() {
+  const grid = document.getElementById('checkGrid');
+  grid.innerHTML = '';
+  TIPOS.forEach((tipo, i) => {
+    const lbl = document.createElement('label');
+    lbl.className = 'check-item';
+    lbl.id = `chk_wrap_${i}`;
+    lbl.innerHTML = `<input type="checkbox" id="chk_${i}" onchange="onCheckChange(${i})"><span>${escHtml(tipo)}</span>`;
+    grid.appendChild(lbl);
+  });
+}
+
+function onCheckChange(i) {
+  const cb   = document.getElementById(`chk_${i}`);
+  const wrap = document.getElementById(`chk_wrap_${i}`);
+  wrap.classList.toggle('checked', cb.checked);
+  salvarRascunho();
+}
+
+function setCheck(i, val) {
+  const cb   = document.getElementById(`chk_${i}`);
+  const wrap = document.getElementById(`chk_wrap_${i}`);
+  if (!cb) return;
+  cb.checked = val;
+  wrap.classList.toggle('checked', !!val);
+}
+
+// ── Auto-save ─────────────────────────────────────────────────
+function salvarRascunho() {
+  const checks = TIPOS.map((_, i) => !!document.getElementById(`chk_${i}`)?.checked);
+  localStorage.setItem(LS_KEY, JSON.stringify({
+    nomeResponsavel : document.getElementById('nomeResponsavel').value,
+    cargoFuncao     : document.getElementById('cargoFuncao').value,
+    nomeOSC         : document.getElementById('nomeOSC').value,
+    cnpjOSC         : document.getElementById('cnpjOSC').value,
+    numeroTermo     : document.getElementById('numeroTermo').value,
+    demarcacao      : document.getElementById('demarcacao').value,
+    fundamentacao   : document.getElementById('fundamentacao').value,
+    local           : document.getElementById('local').value,
+    data            : document.getElementById('data').value,
+    checks,
+  }));
+  document.getElementById('autosaveLabel').textContent =
+    'Rascunho salvo automaticamente às ' + new Date().toLocaleTimeString('pt-BR');
+}
+
+function restaurarRascunho() {
+  const raw = localStorage.getItem(LS_KEY);
+  if (!raw) return false;
+  try {
+    const d = JSON.parse(raw);
+    document.getElementById('nomeResponsavel').value = d.nomeResponsavel || '';
+    document.getElementById('cargoFuncao').value     = d.cargoFuncao     || '';
+    document.getElementById('nomeOSC').value         = d.nomeOSC         || '';
+    document.getElementById('cnpjOSC').value         = d.cnpjOSC         || '';
+    document.getElementById('numeroTermo').value     = d.numeroTermo     || '';
+    document.getElementById('demarcacao').value      = d.demarcacao      || '';
+    document.getElementById('fundamentacao').value   = d.fundamentacao   || '';
+    document.getElementById('local').value           = d.local           || '';
+    document.getElementById('data').value            = d.data            || '';
+    (d.checks || []).forEach((v, i) => setCheck(i, v));
+    return true;
+  } catch(e) { return false; }
+}
+
+function limparFormulario() {
+  if (!confirm('Limpar todos os campos? Esta ação não pode ser desfeita.')) return;
+  localStorage.removeItem(LS_KEY);
+  location.reload();
+}
+
+// ── Labels de assinatura ──────────────────────────────────────
+function atualizarSigLabels() {
+  const n = document.getElementById('nomeResponsavel').value.trim();
+  const c = document.getElementById('cargoFuncao').value.trim();
+  document.getElementById('sigNome').textContent  = n || 'Nome completo do responsável legal';
+  document.getElementById('sigCargo').textContent = c || 'Cargo / Função';
+}
+
+// ── Cabeçalho de impressão ────────────────────────────────────
+function prepararImpressao() {
+  const nome  = document.getElementById('nomeResponsavel').value.trim();
+  const cargo = document.getElementById('cargoFuncao').value.trim();
+  const osc   = document.getElementById('nomeOSC').value.trim();
+  const cnpj  = document.getElementById('cnpjOSC').value.trim();
+  const termo = document.getElementById('numeroTermo').value.trim();
+  const local = document.getElementById('local').value.trim();
+  const data  = document.getElementById('data').value;
+  const dataFmt = data
+    ? new Date(data + 'T12:00:00').toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' })
+    : '_____';
+
+  document.getElementById('printOficioNum').textContent = 'OFÍCIO Nº _____ / _____';
+  document.getElementById('printOpening').innerHTML =
+    `${local || '_____'}, ${dataFmt}.<br><br>` +
+    `Eu, <strong>${nome || '_______________'}</strong>, ${cargo ? cargo + ', ' : ''}representante legal da ` +
+    `Organização da Sociedade Civil <strong>${osc || '_______________'}</strong>, inscrita no CNPJ ` +
+    `sob o nº <strong>${cnpj || '_______________'}</strong>, na qualidade de partícipe do instrumento ` +
+    `de parceria nº <strong>${termo || '_______________'}</strong>, venho, respeitosamente, solicitar, ` +
+    `na forma da legislação vigente, as seguintes alterações no referido instrumento/parceria:`;
+
+  atualizarSigLabels();
+}
+
+function gerarPDF() {
+  prepararImpressao();
+  window.print();
+}
+
+window.addEventListener('beforeprint', prepararImpressao);
+
+// ── Init ──────────────────────────────────────────────────────
+renderChecks();
+const restaurado = restaurarRascunho();
+
+// Tenta pré-preencher com dados do Demonstrativo se os campos estiverem vazios
+try {
+  const daf = localStorage.getItem('daf_autosave');
+  if (daf) {
+    const proj = JSON.parse(daf);
+    if (proj.Header) {
+      if (!document.getElementById('nomeOSC').value && proj.Header.NomeOSC)
+        document.getElementById('nomeOSC').value = proj.Header.NomeOSC;
+      if (!document.getElementById('numeroTermo').value && proj.Header.NumeroTermo)
+        document.getElementById('numeroTermo').value = proj.Header.NumeroTermo;
+    }
+  }
+} catch(e) {}
+
+// Data padrão = hoje
+if (!document.getElementById('data').value) {
+  document.getElementById('data').value = new Date().toISOString().slice(0, 10);
+}
+
+atualizarSigLabels();
+document.getElementById('autosaveLabel').textContent = restaurado
+  ? 'Rascunho restaurado automaticamente.'
+  : 'Preencha os campos. O rascunho é salvo automaticamente.';
+</script>
+</body>
+</html>
