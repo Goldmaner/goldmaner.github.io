@@ -129,7 +129,7 @@ label.check-item input[type="checkbox"] { margin-top: 2px; accent-color: #1565C0
   </div>
 
   <!-- ══ 3. FUNDAMENTAÇÃO ════════════════════════════════════════ -->
-  <div class="section">
+  <div class="section" id="secFundamentacao" style="display:none;">
     <div class="section-title">3. Fundamentação e/ou Justificativa da Alteração</div>
     <p class="check-help" style="margin-bottom:16px;">Preencha os campos abaixo conforme aplicável. Os campos deixados em branco manterão o texto instrucional padrão no documento gerado.</p>
 
@@ -281,13 +281,14 @@ function onCheckChange(i) {
   const cb   = document.getElementById(`chk_${i}`);
   const wrap = document.getElementById(`chk_wrap_${i}`);
   wrap.classList.toggle('checked', cb.checked);
-  // Destaque visual para fund5 se prorrogação for marcada
-  if (i === IDX_PRORROGACAO) {
-    document.getElementById('fund5wrap').style.borderLeftColor =
-      cb.checked ? '#E53935' : '#1565C0';
-  }
+  if (i === IDX_PRORROGACAO) toggleFundamentacao();
   salvarRascunho();
   atualizarOutputSeAberto();
+}
+
+function toggleFundamentacao() {
+  const checked = document.getElementById(`chk_${IDX_PRORROGACAO}`)?.checked;
+  document.getElementById('secFundamentacao').style.display = checked ? 'block' : 'none';
 }
 
 function setCheck(i, val) {
@@ -296,10 +297,7 @@ function setCheck(i, val) {
   if (!cb) return;
   cb.checked = !!val;
   wrap.classList.toggle('checked', !!val);
-  if (i === IDX_PRORROGACAO) {
-    document.getElementById('fund5wrap').style.borderLeftColor =
-      !!val ? '#E53935' : '#1565C0';
-  }
+  if (i === IDX_PRORROGACAO) toggleFundamentacao();
 }
 
 // ── Gerar HTML para SEI ────────────────────────────────────────
@@ -346,7 +344,9 @@ function buildHtmlSEI() {
   }
   html += `<p class="${TJ}">&nbsp;</p>\n\n`;
 
-  // Fundamentação
+  // Fundamentação (somente se Prorrogação de vigência estiver marcada)
+  if (!checks[IDX_PRORROGACAO]) return html.trimEnd();
+
   html += `<p class="${TJ}"><b>Fundamentação e/ou Justificativa da Alteração:</b></p>\n\n`;
   html += `<p class="${TJ}">Indicar as razões técnicas, jurídicas e administrativas que motivam a solicitação da alteração. Destaca-se que estas devem respeitar os artigos 61 e 62 do Decreto 57.575 de 2016, onde os setores técnicos competentes devem se manifestar acerca:</p>\n\n`;
   html += `<p class="${TJ}">&nbsp;</p>\n\n`;
